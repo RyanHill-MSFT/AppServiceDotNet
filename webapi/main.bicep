@@ -43,9 +43,24 @@ var cosmosAccountName = toLower(applicationName)
 var websiteName = applicationName
 var hostingPlanName = applicationName
 var keyvaultName = applicationName
-
-// Use built-in roles https://docs.microsoft.com/en-us/azure/key-vault/general/rbac-guide?tabs=azure-cli#azure-built-in-roles-for-key-vault-data-plane-operations
-var keyVaultSecretsUserRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
+var myAppConfig = [
+  {
+    name: 'CosmosDb:Account'
+    value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=${kv::cosmosDbAccountSecret.name})'
+  }
+  {
+    name: 'CosmosDb:Key'
+    value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=${kv::cosmostDbKeySecret.name})'
+  }
+  {
+    name: 'CosmosDb:DatabaseName'
+    value: databaseName
+  }
+  {
+    name: 'CosmosDb:ContainerName'
+    value: containerName
+  }
+]
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
   name: cosmosAccountName
@@ -75,11 +90,12 @@ resource kv 'Microsoft.KeyVault/vaults@2019-09-01' = {
       family: 'A'
       name: 'standard'
     }
+    accessPolicies: []
     tenantId: subscription().tenantId
-    enableRbacAuthorization: true
-    enabledForDeployment: false
+    enabledForDeployment: true
+    enabledForTemplateDeployment: true
     enabledForDiskEncryption: true
-    enabledForTemplateDeployment: false
+    enableRbacAuthorization: false
   }
 
   resource cosmosDbAccountSecret 'secrets' = {
@@ -115,35 +131,8 @@ resource website 'Microsoft.Web/sites@2020-06-01' = {
   properties: {
     serverFarmId: hostingPlan.id
     siteConfig: {
-      appSettings: [
-        {
-          name: 'CosmosDb:Account'
-          value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=${kv::cosmosDbAccountSecret.name})'
-        }
-        {
-          name: 'CosmosDb:Key'
-          value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=${kv::cosmostDbKeySecret.name})'
-        }
-        {
-          name: 'CosmosDb:DatabaseName'
-          value: databaseName
-        }
-        {
-          name: 'CosmosDb:ContainerName'
-          value: containerName
-        }
-      ]
+      appSettings: myAppConfig
     }
-  }
-}
-
-resource kvWebsitePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid(kv.id, website.name, keyVaultSecretsUserRole)
-  scope: kv
-  properties: {
-    principalId: website.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: keyVaultSecretsUserRole
   }
 }
 
@@ -153,5 +142,23 @@ resource srcControls 'Microsoft.Web/sites/sourcecontrols@2020-06-01' = {
     repoUrl: repositoryUrl
     branch: branch
     isManualIntegration: true
+  }
+}
+
+resource kvAccessPolicies 'Microsoft.KeyVault/vaults/accessPolicies@2021-11-01-preview' = {
+  parent: kv
+  name: 'add'
+  properties: {
+    accessPolicies: [
+      {
+        tenantId: subscription().tenantId
+        objectId: website.identity.principalId
+        permissions: {
+          secrets: [
+            'get'
+          ]
+        }
+      }
+    ]
   }
 }
