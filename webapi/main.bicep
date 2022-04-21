@@ -134,6 +134,16 @@ resource website 'Microsoft.Web/sites@2020-06-01' = {
       appSettings: myAppConfig
     }
   }
+
+  resource websiteSlotSetting 'config' = {
+    name: 'slotConfigNames'
+    properties: {
+      appSettingNames: [
+        'CosmosDb:Account'
+        'CosmosDb:Key'
+      ]
+    }
+  }
 }
 
 resource srcControls 'Microsoft.Web/sites/sourcecontrols@2020-06-01' = {
