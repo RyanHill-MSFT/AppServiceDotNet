@@ -20,7 +20,7 @@ param location string = resourceGroup().location
   'P4'
 ])
 @description('App Service Plan\'s pricing tier. Details at https://azure.microsoft.com/en-us/pricing/details/app-service/')
-param appServicePlanTier string = 'F1'
+param appServicePlanTier string = 'S1'
 
 @minValue(1)
 @maxValue(3)
@@ -78,6 +78,24 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
       }
     ]
     databaseAccountOfferType: 'Standard'
+  }
+
+  resource database 'sqlDatabases' = {
+    name: databaseName
+    properties: {
+      resource: {
+        id: databaseName
+      }
+    }
+
+    resource container 'containers' = {
+      name: containerName
+      properties: {
+        resource: {
+          id: containerName
+        }
+      }
+    }
   }
 }
 
