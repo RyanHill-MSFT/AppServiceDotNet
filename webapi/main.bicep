@@ -153,7 +153,7 @@ resource website 'Microsoft.Web/sites@2020-06-01' = {
     }
   }
 
-  resource websiteSlotSetting 'config' = {
+  resource slotSeting 'config' = {
     name: 'slotConfigNames'
     properties: {
       appSettingNames: [
@@ -162,14 +162,14 @@ resource website 'Microsoft.Web/sites@2020-06-01' = {
       ]
     }
   }
-}
 
-resource srcControls 'Microsoft.Web/sites/sourcecontrols@2020-06-01' = {
-  name: '${website.name}/web'
-  properties: {
-    repoUrl: repositoryUrl
-    branch: branch
-    isManualIntegration: true
+  resource source 'sourcecontrols' = {
+    name: 'web'
+    properties: {
+      repoUrl: repositoryUrl
+      branch: branch
+      isManualIntegration: true
+    }
   }
 }
 
