@@ -27,6 +27,13 @@ param appServicePlanTier string = 'S1'
 @description('App Service Plan\'s instance count')
 param appServicePlanInstances int = 1
 
+@description('The App Configuration SKU. Only "standard" supports customer-managed keys from Key Vault')
+@allowed([
+  'free'
+  'standard'
+])
+param configSku string = 'standard'
+
 @description('The URL for the GitHub repository that contains the project to deploy.')
 param repositoryUrl string = 'https://github.com/Azure-Samples/cosmos-dotnet-core-todo-app.git'
 
@@ -43,24 +50,7 @@ var cosmosAccountName = toLower(applicationName)
 var websiteName = applicationName
 var hostingPlanName = applicationName
 var keyvaultName = applicationName
-var myAppConfig = [
-  {
-    name: 'CosmosDb:Account'
-    value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=${kv::cosmosDbAccountSecret.name})'
-  }
-  {
-    name: 'CosmosDb:Key'
-    value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=${kv::cosmostDbKeySecret.name})'
-  }
-  {
-    name: 'CosmosDb:DatabaseName'
-    value: databaseName
-  }
-  {
-    name: 'CosmosDb:ContainerName'
-    value: containerName
-  }
-]
+var appConfigName = applicationName
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
   name: cosmosAccountName
@@ -131,6 +121,44 @@ resource kv 'Microsoft.KeyVault/vaults@2019-09-01' = {
   }
 }
 
+resource appConfig 'Microsoft.AppConfiguration/configurationStores@2021-10-01-preview' = {
+  name: appConfigName
+  location: location
+  sku: {
+    name: configSku
+  }
+
+  resource cosmosDbAccountConfigValue 'keyValues' = {
+    name: 'CosmosDb:Account'
+    properties: {
+      contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
+      value: '{"uri":"${kv::cosmosDbAccountSecret.properties.secretUri}"}'
+    }
+  }
+
+  resource cosmosDbKeyConfigVlaue 'keyValues' = {
+    name: 'CosmosDb:Key'
+    properties: {
+      contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
+      value: '{"uri":"${kv::cosmostDbKeySecret.properties.secretUri}"}'      
+    }
+  }
+
+  resource cosmosDbDatabaseNameNameConfigValue 'keyValues' = {
+    name: 'CosmosDb:DatabaseName'
+    properties: {
+      value: databaseName
+    }
+  }
+
+  resource cosmosDbAContainerNameConfigValue 'keyValues' = {
+    name: 'CosmosDb:ContainerName'
+    properties: {
+      value: containerName
+    }
+  }
+}
+
 resource hostingPlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   name: hostingPlanName
   location: location
@@ -149,7 +177,12 @@ resource website 'Microsoft.Web/sites@2020-06-01' = {
   properties: {
     serverFarmId: hostingPlan.id
     siteConfig: {
-      appSettings: myAppConfig
+      connectionStrings: [
+        {
+          name: 'AppConfig'
+          connectionString: listKeys(appConfig.id, appConfig.apiVersion).value[0].connectionString
+        }
+      ]
     }
   }
 
@@ -159,6 +192,9 @@ resource website 'Microsoft.Web/sites@2020-06-01' = {
       appSettingNames: [
         'CosmosDb:Account'
         'CosmosDb:Key'
+      ]
+      connectionStringNames: [
+        'AppConfig'
       ]
     }
   }
