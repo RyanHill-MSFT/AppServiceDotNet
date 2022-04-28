@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "appConfig1": {
+      "secretStore": "LocalSecretsFile",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.AppConfiguration/configurationStores/appcs-ryhill",
+      "type": "appConfig.azure",
+      "connectionId": "AppConfig",
+      "dynamicId": null
+    },
+    "cosmosdb1": {
+      "containerPorts": "8081:8081,10251:10251,10252:10252,10253:10253,10254:10254",
+      "secretStore": "LocalSecretsFile",
+      "containerName": "cosmosdb",
+      "containerImage": "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator",
+      "type": "cosmosdb.container",
+      "connectionId": "CosmosDb",
+      "dynamicId": null
+    },
+    "secrets1": {
+      "secretStore": null,
+      "resourceId": null,
+      "type": "secrets.user",
+      "connectionId": null
+    }
+  }
+}
