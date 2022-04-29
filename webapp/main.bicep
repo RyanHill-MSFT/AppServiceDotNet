@@ -48,11 +48,18 @@ param repoUrl string = ''
 @description('The branch of the GitHub repository to use.')
 param branch string = 'main'
 
+param useRoleDefinitions bool = false
+
 var cosmosAccountName = toLower(applicationName)
 var websiteName = applicationName
 var hostingPlanName = applicationName
 var keyvaultName = applicationName
 var appConfigName = applicationName
+
+// Use built-in roles https://docs.microsoft.com/en-us/azure/key-vault/general/rbac-guide?tabs=azure-cli#azure-built-in-roles-for-key-vault-data-plane-operations
+var keyVaultSecretsUserRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
+// Use built-in roles https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#documentdb-account-contributor
+var documentDbContributorRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5bd9cd88-fe45-4216-938b-f97437e15450')
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
   name: cosmosAccountName
@@ -87,7 +94,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-10-01' = {
     enabledForDeployment: true
     enabledForTemplateDeployment: true
     enabledForDiskEncryption: true
-    enableRbacAuthorization: false
+    enableRbacAuthorization: useRoleDefinitions
   }
 
   resource cosmosDbAccountSecret 'secrets' = {
@@ -105,7 +112,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-10-01' = {
   }
 }
 
-resource kvAccessPolicies 'Microsoft.KeyVault/vaults/accessPolicies@2021-10-01' = {
+resource kvAccessPolicies 'Microsoft.KeyVault/vaults/accessPolicies@2021-10-01' = if(!useRoleDefinitions) {
   parent: kv
   name: 'add'
   properties: {
@@ -229,5 +236,23 @@ resource website 'Microsoft.Web/sites@2021-03-01' = {
       branch: branch
       isManualIntegration: true
     }
+  }
+}
+
+resource kvWebsitePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  name: guid(kv.id, website.name, keyVaultSecretsUserRole)
+  scope: kv
+  properties: {
+    principalId: website.identity.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: keyVaultSecretsUserRole
+  }
+}
+resource websiteDocumentDbPermissions 'Microsoft.Authorization/roleAssignments@2015-07-01' = if(useRoleDefinitions) {
+  name: guid(cosmosAccount.id, website.name, documentDbContributorRole)
+  scope: cosmosAccount
+  properties: {
+    principalId: website.identity.principalId
+    roleDefinitionId: documentDbContributorRole
   }
 }
