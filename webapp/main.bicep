@@ -1,9 +1,16 @@
 @description('Application Name')
 @maxLength(30)
-param applicationName string = 'todo-app-${uniqueString(resourceGroup().id)}'
+param applicationName string = 'todoapp-${uniqueString(resourceGroup().id)}'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
+
+@allowed([
+  'windows'
+  'linux'
+])
+@description('App Service OS type')
+param platform string = 'linux'
 
 @allowed([
   'F1'
@@ -20,31 +27,26 @@ param location string = resourceGroup().location
   'P4'
 ])
 @description('App Service Plan\'s pricing tier. Details at https://azure.microsoft.com/en-us/pricing/details/app-service/')
-param appServicePlanTier string = 'S1'
-
-@minValue(1)
-@maxValue(3)
-@description('App Service Plan\'s instance count')
-param appServicePlanInstances int = 1
+param planSku string = 'S1'
 
 @description('The App Configuration SKU. Only "standard" supports customer-managed keys from Key Vault')
 @allowed([
   'free'
   'standard'
 ])
-param configSku string = 'standard'
-
-@description('The URL for the GitHub repository that contains the project to deploy.')
-param repositoryUrl string = 'https://github.com/Azure-Samples/cosmos-dotnet-core-todo-app.git'
-
-@description('The branch of the GitHub repository to use.')
-param branch string = 'main'
+param configSku string = 'free'
 
 @description('The Cosmos DB database name.')
 param databaseName string = 'Tasks'
 
 @description('The Cosmos DB container name.')
 param containerName string = 'Items'
+
+@description('Optional URL for the GitHub repository that contains the project to deploy.')
+param repoUrl string = ''
+
+@description('The branch of the GitHub repository to use.')
+param branch string = 'main'
 
 var cosmosAccountName = toLower(applicationName)
 var websiteName = applicationName
@@ -60,6 +62,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
     }
+    databaseAccountOfferType: 'Standard'
     locations: [
       {
         locationName: location
@@ -67,29 +70,10 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
         isZoneRedundant: false
       }
     ]
-    databaseAccountOfferType: 'Standard'
-  }
-
-  resource database 'sqlDatabases' = {
-    name: databaseName
-    properties: {
-      resource: {
-        id: databaseName
-      }
-    }
-
-    resource container 'containers' = {
-      name: containerName
-      properties: {
-        resource: {
-          id: containerName
-        }
-      }
-    }
   }
 }
 
-resource kv 'Microsoft.KeyVault/vaults@2019-09-01' = {
+resource kv 'Microsoft.KeyVault/vaults@2021-10-01' = {
   // Make sure the Key Vault name begins with a letter.
   name: keyvaultName
   location: location
@@ -121,6 +105,24 @@ resource kv 'Microsoft.KeyVault/vaults@2019-09-01' = {
   }
 }
 
+resource kvAccessPolicies 'Microsoft.KeyVault/vaults/accessPolicies@2021-10-01' = {
+  parent: kv
+  name: 'add'
+  properties: {
+    accessPolicies: [
+      {
+        tenantId: subscription().tenantId
+        objectId: website.identity.principalId
+        permissions: {
+          secrets: [
+            'get'
+          ]
+        }
+      }
+    ]
+  }
+}
+
 resource appConfig 'Microsoft.AppConfiguration/configurationStores@2021-10-01-preview' = {
   name: appConfigName
   location: location
@@ -140,7 +142,7 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2021-10-01-pr
     name: 'CosmosDb:Key'
     properties: {
       contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
-      value: '{"uri":"${kv::cosmostDbKeySecret.properties.secretUri}"}'      
+      value: '{"uri":"${kv::cosmostDbKeySecret.properties.secretUri}"}'
     }
   }
 
@@ -159,16 +161,16 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2021-10-01-pr
   }
 }
 
-resource hostingPlan 'Microsoft.Web/serverfarms@2020-06-01' = {
+resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: hostingPlanName
   location: location
   sku: {
-    name: appServicePlanTier
-    capacity: appServicePlanInstances
+    name: planSku
   }
+  kind: platform
 }
 
-resource website 'Microsoft.Web/sites@2020-06-01' = {
+resource website 'Microsoft.Web/sites@2021-03-01' = {
   name: websiteName
   location: location
   identity: {
@@ -181,8 +183,10 @@ resource website 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'AppConfig'
           connectionString: listKeys(appConfig.id, appConfig.apiVersion).value[0].connectionString
+          type: 'Custom'
         }
       ]
+      linuxFxVersion: 'DOTNETCORE|6.0'
     }
   }
 
@@ -199,30 +203,31 @@ resource website 'Microsoft.Web/sites@2020-06-01' = {
     }
   }
 
-  resource source 'sourcecontrols' = {
+  resource logs 'config' = {
+    name: 'logs'
+    properties: {
+      applicationLogs: {
+        fileSystem: {
+          level: 'Warning'
+        }
+      }
+      httpLogs: {
+        fileSystem: {
+          enabled: true
+        }
+      }
+      detailedErrorMessages: {
+        enabled: true
+      }
+    }
+  }
+
+  resource source 'sourcecontrols' = if(contains(repoUrl, 'http')) {
     name: 'web'
     properties: {
-      repoUrl: repositoryUrl
+      repoUrl: repoUrl
       branch: branch
       isManualIntegration: true
     }
-  }
-}
-
-resource kvAccessPolicies 'Microsoft.KeyVault/vaults/accessPolicies@2021-11-01-preview' = {
-  parent: kv
-  name: 'add'
-  properties: {
-    accessPolicies: [
-      {
-        tenantId: subscription().tenantId
-        objectId: website.identity.principalId
-        permissions: {
-          secrets: [
-            'get'
-          ]
-        }
-      }
-    ]
   }
 }
