@@ -1,10 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace WebMeDown.Site.Models
 {
     public class Officer
     {
+        [Key]
+        public int Id { get; set; }
+
         public string SerialNo { get; set; } = GenerateSerialNumber();
 
         public StarfleetRank Rank { get; set; }
@@ -66,9 +70,8 @@ namespace WebMeDown.Site.Models
     public enum DepartmentArea
     {
         Science,
+        Medical,
         Operations,
-        Command,
-        Sciences,
-        Medical
+        Command
     }
 }

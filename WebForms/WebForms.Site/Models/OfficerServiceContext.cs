@@ -6,9 +6,9 @@ using System.Web;
 
 namespace WebMeDown.Site.Models
 {
-    public class OfficerContext : DbContext
+    public class OfficerServiceContext : DbContext
     {
-        public OfficerContext() : base("Starfleet")
+        public OfficerServiceContext() : base("Starfleet")
         {
         }
 
