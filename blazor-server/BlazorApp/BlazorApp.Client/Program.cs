@@ -8,21 +8,19 @@ using Microsoft.Identity.Web;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure App Configuration
-builder.Host.ConfigureWebHostDefaults(webHostBuilder =>
-{
-    webHostBuilder.ConfigureAppConfiguration((context, config) =>
+builder.Host
+    .ConfigureAppConfiguration((context, config) =>
     {
-        var credentials = new DefaultAzureCredential();
+        var credential = new DefaultAzureCredential();
         config.AddAzureAppConfiguration(options =>
         {
             var endpoint = builder.Configuration["AzureAppConfiguration:Endpoint"].ToString();
-            options.Connect(new Uri(endpoint), credentials).ConfigureKeyVault(kv =>
+            options.Connect(new Uri(endpoint), credential).ConfigureKeyVault(kv =>
             {
-                kv.SetCredential(credentials);
+                kv.SetCredential(credential);
             });
-        });
+        })
     });
-});
 
 // Add Microsoft Authentication
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
