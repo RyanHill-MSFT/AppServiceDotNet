@@ -19,7 +19,7 @@ builder.Host
             {
                 kv.SetCredential(credential);
             });
-        })
+        });
     });
 
 // Add Microsoft Authentication
