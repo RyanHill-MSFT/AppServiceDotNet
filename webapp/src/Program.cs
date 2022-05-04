@@ -1,22 +1,30 @@
 using Azure.Identity;
 using Microsoft.Azure.Cosmos;
+using System.Text.Json;
 using webapp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add app configuration service
-var connectionString = builder.Configuration.GetConnectionString("AppConfig");
-builder.Host.ConfigureAppConfiguration(config =>
-{
-    config.AddAzureAppConfiguration(options =>
+builder.Host
+    .ConfigureAppConfiguration(config =>
     {
-        options.Connect(connectionString);
-        options.ConfigureKeyVault(options =>
+        config.AddAzureAppConfiguration(options =>
         {
-            options.SetCredential(new DefaultAzureCredential());
+            var credential = new DefaultAzureCredential();
+            options.Connect((string?)builder.Configuration.GetConnectionString("AppConfig"));
+            options.ConfigureKeyVault(options => options.SetCredential(credential));
+        });
+    })
+    .ConfigureLogging(builder =>
+    {
+        builder.AddJsonConsole(options =>
+        {
+            options.IncludeScopes = true;
+            options.TimestampFormat = "yyyy-MM-dd hh:mm:ss";
+            options.JsonWriterOptions = new JsonWriterOptions() { Indented = false };
         });
     });
-});
 
 // Add services to the container.
 builder.Services.AddSingleton<ICosmosDbService>(s =>
@@ -27,7 +35,7 @@ builder.Services.AddSingleton<ICosmosDbService>(s =>
     string databaseName = section.GetSection("DatabaseName").Value;
     string containerName = section.GetSection("ContainerName").Value;
 
-    CosmosClient client = new CosmosClient(account, key);
+    CosmosClient client = new(account, key);
     CosmosDbService cosmosDbService = new(client, databaseName, containerName);
     DatabaseResponse database = client.CreateDatabaseIfNotExistsAsync(databaseName).Result;
     database.Database.CreateContainerIfNotExistsAsync(containerName, "/id").Wait();
