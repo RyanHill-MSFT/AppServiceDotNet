@@ -1,0 +1,22 @@
+﻿@using System.Security.Principal
+@using Microsoft.Graph
+@inject GraphServiceClient graphClient
+
+<ul class="navbar-nav">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        var photo = await graphClient.Me.Photo.Content.Request().GetAsync();
+        var imgData = Convert.ToBase64String((photo as MemoryStream).ToArray());
+        <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
+        <div class="image-cropper"><img src="data:image/png;base64, @imgData" /></div>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
+    }
+</ul>

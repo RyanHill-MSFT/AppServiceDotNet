@@ -1,19 +1,10 @@
 {
   "dependencies": {
-    "cosmosdb1": {
-      "containerPorts": "8081:8081,10251:10251,10252:10252,10253:10253,10254:10254",
+    "identityapp1": {
       "secretStore": "LocalSecretsFile",
-      "containerName": "cosmosdb",
-      "containerImage": "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator",
-      "type": "cosmosdb.container",
-      "connectionId": "CosmosDb",
+      "type": "identityapp.secretStore",
+      "connectionId": "AzureAD:ClientSecret",
       "dynamicId": null
-    },
-    "secrets1": {
-      "secretStore": null,
-      "resourceId": null,
-      "type": "secrets.user",
-      "connectionId": null
     }
   }
 }

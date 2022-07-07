@@ -1,48 +1,28 @@
-using Azure.Identity;
-using Microsoft.Azure.Cosmos;
-using System.Text.Json;
-using webapp.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add app configuration service
-builder.Host
-    .ConfigureAppConfiguration(config =>
-    {
-        config.AddAzureAppConfiguration(options =>
-        {
-            var credential = new DefaultAzureCredential();
-            options.Connect((string?)builder.Configuration.GetConnectionString("AppConfig"));
-            options.ConfigureKeyVault(options => options.SetCredential(credential));
-        });
-    })
-    .ConfigureLogging(builder =>
-    {
-        builder.AddJsonConsole(options =>
-        {
-            options.IncludeScopes = true;
-            options.TimestampFormat = "yyyy-MM-dd hh:mm:ss";
-            options.JsonWriterOptions = new JsonWriterOptions() { Indented = false };
-        });
-    });
+var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ') ?? builder.Configuration["MicrosoftGraph:Scopes"]?.Split(' ');
 
 // Add services to the container.
-builder.Services.AddSingleton<ICosmosDbService>(s =>
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+        .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+            .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
+            .AddInMemoryTokenCaches();
+
+builder.Services.AddAuthorization(options =>
 {
-    var section = builder.Configuration.GetSection("CosmosDb");
-    string account = section.GetSection("Account").Value;
-    string key = section.GetSection("Key").Value;
-    string databaseName = section.GetSection("DatabaseName").Value;
-    string containerName = section.GetSection("ContainerName").Value;
-
-    CosmosClient client = new(account, key);
-    CosmosDbService cosmosDbService = new(client, databaseName, containerName);
-    DatabaseResponse database = client.CreateDatabaseIfNotExistsAsync(databaseName).Result;
-    database.Database.CreateContainerIfNotExistsAsync(containerName, "/id").Wait();
-
-    return cosmosDbService;
+    // By default, all incoming requests will be authorized according to the default policy.
+    options.FallbackPolicy = options.DefaultPolicy;
 });
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages()
+    .AddMicrosoftIdentityUI();
 
 var app = builder.Build();
 
@@ -59,8 +39,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers();
 
 app.Run();

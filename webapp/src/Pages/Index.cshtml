@@ -1,10 +1,19 @@
-﻿@page
+@page
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
+    <h1 id="greeting" class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+<div>Graph API result</div>
+<div>@ViewData["GraphApiResult"]</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        document.getElementById("greeting").innerHTML = getGreeting();
+    </script>
+}

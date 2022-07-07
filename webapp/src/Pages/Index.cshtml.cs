@@ -1,20 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
+using System.Net;
+using Microsoft.Graph;
 
-namespace webapp.Pages;
-
-public class IndexModel : PageModel
+namespace webapp.Pages
 {
-    private readonly ILogger<IndexModel> _logger;
-
-    public IndexModel(ILogger<IndexModel> logger)
+    [AuthorizeForScopes(ScopeKeySection = "MicrosoftGraph:Scopes")]
+    public class IndexModel : PageModel
     {
-        _logger = logger;
-    }
+        private readonly GraphServiceClient _graphServiceClient;
+        private readonly ILogger<IndexModel> _logger;
 
-    public void OnGet()
-    {
+        public IndexModel(ILogger<IndexModel> logger, GraphServiceClient graphServiceClient)
+        {
+            _logger = logger;
+            _graphServiceClient = graphServiceClient;
+        }
 
+        public async Task OnGet()
+        {
+            var user = await _graphServiceClient.Me
+                .Request()
+                .GetAsync();
+            ViewData["GraphApiResult"] = user.DisplayName;
+        }
     }
 }

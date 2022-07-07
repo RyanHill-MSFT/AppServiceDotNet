@@ -1,13 +1,9 @@
 {
   "dependencies": {
-    "cosmosdb1": {
-      "type": "cosmosdb",
-      "connectionId": "CosmosDb",
+    "identityapp1": {
+      "type": "identityapp",
+      "connectionId": "AzureAD:ClientSecret",
       "dynamicId": null
-    },
-    "secrets1": {
-      "type": "secrets",
-      "connectionId": null
     }
   }
 }

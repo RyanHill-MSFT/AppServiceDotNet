@@ -16,3 +16,18 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.image-cropper {
+    width: 48px;
+    height: 48px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+img {
+    display: inline;
+    margin: 0 auto;
+    height: 100%;
+    width: auto;
+}
