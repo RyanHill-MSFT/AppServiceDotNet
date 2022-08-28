@@ -5,11 +5,6 @@
       "connectionId": "AzureAD:ClientSecret",
       "dynamicId": null
     },
-    "appConfig1": {
-      "type": "appConfig",
-      "connectionId": "AppConfig",
-      "dynamicId": null
-    },
     "secrets1": {
       "type": "secrets",
       "dynamicId": null

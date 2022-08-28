@@ -1,43 +1,56 @@
+using System.Text.Json;
+using Azure.Core.Diagnostics;
 using Azure.Identity;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
+using AzureEventSourceListener listener = AzureEventSourceListener.CreateConsoleLogger();
+builder.Logging.AddAzureWebAppDiagnostics();
 
 // Add Azure App Configuration to the container.
-if (Uri.TryCreate(builder.Configuration["Endpoints:AppConfig"], UriKind.Absolute, out var endpoint))
+builder.Configuration.AddAzureAppConfiguration(options =>
 {
     // Use Azure Active Directory authentication.
     // The identity of this app should be assigned 'App Configuration Data Reader' or 'App Configuration Data Owner' role in App Configuration.
     // For more information, please visit https://aka.ms/vs/azure-app-configuration/concept-enable-rbac
-    builder.Configuration.AddAzureAppConfiguration(options =>
+
+    var cred = new DefaultAzureCredential(new DefaultAzureCredentialOptions()
     {
-        options.Connect(endpoint, new DefaultAzureCredential());
+        Diagnostics =
+        {
+            LoggedHeaderNames = { "x-ms-request-id" },
+            LoggedQueryParameters = { "api-version" },
+            IsLoggingContentEnabled = true
+        }
     });
-}
-builder.Services.AddAzureAppConfiguration();
+    string appConfig = builder.Configuration["Endpoints:AppConfig"];
+    if (Uri.TryCreate(appConfig, UriKind.Absolute, out var endpoint))
+    {
+        options.Connect(endpoint, cred).ConfigureKeyVault(kv => kv.SetCredential(cred));
+    }
+    else
+    {
+        options.Connect(appConfig).ConfigureKeyVault(kv => kv.SetCredential(cred));
+    }
+});
 
 var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ')
                     ?? builder.Configuration["MicrosoftGraph:Scopes"]?.Split(' ');
 
 // Add services to the container.
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+builder.Services.AddAzureAppConfiguration();
+
+builder.Services.AddRazorPages()
+                .AddMicrosoftIdentityUI();
+
+builder.Services.AddAuthorization(options => options.FallbackPolicy = options.DefaultPolicy)
+                .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
                 .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                 .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
                 .AddInMemoryTokenCaches();
-
-builder.Services.AddAuthorization(options =>
-{
-    // By default, all incoming requests will be authorized according to the default policy.
-    options.FallbackPolicy = options.DefaultPolicy;
-});
-builder.Services.AddRazorPages()
-                .AddMicrosoftIdentityUI();
 
 var app = builder.Build();
 

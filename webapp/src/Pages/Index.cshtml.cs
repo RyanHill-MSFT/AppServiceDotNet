@@ -20,10 +20,14 @@ namespace webapp.Pages
 
         public async Task OnGet()
         {
-            var user = await _graphServiceClient.Me
-                .Request()
-                .GetAsync();
-            ViewData["GraphApiResult"] = user.DisplayName;
+            using (_logger.BeginScope("{0} {1}", nameof(IndexModel), nameof(OnGet)))
+            {
+                var user = await _graphServiceClient.Me
+                    .Request()
+                    .GetAsync();
+                _logger.LogInformation(user.UserPrincipalName);
+                ViewData["GraphApiResult"] = user.DisplayName;
+            }
         }
     }
 }
