@@ -1,11 +1,23 @@
 using System.Text.Json;
 using Azure.Core.Diagnostics;
 using Azure.Identity;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+var cred = new DefaultAzureCredential(new DefaultAzureCredentialOptions()
+{
+    Diagnostics =
+    {
+        LoggedHeaderNames = { "x-ms-request-id" },
+        LoggedQueryParameters = { "api-version" },
+        IsLoggingContentEnabled = true
+    }
+});
+
 using AzureEventSourceListener listener = AzureEventSourceListener.CreateConsoleLogger();
 builder.Logging.AddAzureWebAppDiagnostics();
 
@@ -16,15 +28,6 @@ builder.Configuration.AddAzureAppConfiguration(options =>
     // The identity of this app should be assigned 'App Configuration Data Reader' or 'App Configuration Data Owner' role in App Configuration.
     // For more information, please visit https://aka.ms/vs/azure-app-configuration/concept-enable-rbac
 
-    var cred = new DefaultAzureCredential(new DefaultAzureCredentialOptions()
-    {
-        Diagnostics =
-        {
-            LoggedHeaderNames = { "x-ms-request-id" },
-            LoggedQueryParameters = { "api-version" },
-            IsLoggingContentEnabled = true
-        }
-    });
     string appConfig = builder.Configuration["Endpoints:AppConfig"];
     if (Uri.TryCreate(appConfig, UriKind.Absolute, out var endpoint))
     {
@@ -41,6 +44,9 @@ var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ')
 
 // Add services to the container.
 builder.Services.AddAzureAppConfiguration();
+
+// The following line enables Application Insights telemetry collection.
+builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddRazorPages()
                 .AddMicrosoftIdentityUI();
