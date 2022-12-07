@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using webjob.Services;
 
 var builder = new HostBuilder();
 builder
@@ -19,6 +21,10 @@ builder
         {
             b.AddApplicationInsightsWebJobs(o => o.InstrumentationKey = instrumentationKey);
         }
+    })
+    .ConfigureServices(services =>
+    {
+        services.AddSingleton<IBackgroundTasker, BackgroundTasker>();
     });
 
 var host = builder.Build();
