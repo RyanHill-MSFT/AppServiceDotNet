@@ -20,7 +20,7 @@ param location string = resourceGroup().location
   'P4'
 ])
 @description('App Service Plan\'s pricing tier. Details at https://azure.microsoft.com/en-us/pricing/details/app-service/')
-param appServicePlanTier string = 'S1'
+param appServicePlanTier string = 'B1'
 
 @minValue(1)
 @maxValue(3)

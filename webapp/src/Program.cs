@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Serilog;
+using webapp.Services;
+using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 var cred = new DefaultAzureCredential(new DefaultAzureCredentialOptions()
@@ -17,9 +19,6 @@ var cred = new DefaultAzureCredential(new DefaultAzureCredentialOptions()
         IsLoggingContentEnabled = true
     }
 });
-
-using AzureEventSourceListener listener = AzureEventSourceListener.CreateConsoleLogger();
-builder.Logging.AddAzureWebAppDiagnostics();
 
 // Add Azure App Configuration to the container.
 builder.Configuration.AddAzureAppConfiguration(options =>
@@ -57,6 +56,13 @@ builder.Services.AddAuthorization(options => options.FallbackPolicy = options.De
                 .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                 .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
                 .AddInMemoryTokenCaches();
+
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddBlobServiceClient(builder.Configuration["StorageAccount:ConnectionString:blob"], preferMsi: true);
+    clientBuilder.AddQueueServiceClient(builder.Configuration["StorageAccount:ConnectionString:queue"], preferMsi: true);
+});
+builder.Services.AddTransient<IBufferedFileUpload, BufferedFileUpload>();
 
 var app = builder.Build();
 
