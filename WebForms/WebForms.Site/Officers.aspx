@@ -24,14 +24,18 @@
                 <h2>Officers</h2>
             </hgroup>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Officer</th>
-                    <th>Assignment</th>
-                </tr>
-            </thead>
-            <tbody id="officers"></tbody>
-        </table>
+        <asp:GridView runat="server" ID="officersGrid" ItemType="WebMeDown.Site.Models.Officer" DataKeyNames="Id" SelectMethod="officersGrid_GetData" AutoGenerateColumns="false">
+            <Columns>
+                <asp:DynamicField DataField="SerialNo" />
+                <asp:DynamicField DataField="Rank" />
+                <asp:TemplateField HeaderText="Name">
+                    <ItemTemplate>
+                        <asp:Label runat="server" Text="<%# Item.FirstName%>" />
+                        <asp:Label runat="server" Text="<%# Item.MiddleName %>" />
+                        <asp:Label runat="server" Text="<%# Item.LastName%>" />
+                    </ItemTemplate>
+                </asp:TemplateField>
+            </Columns>
+        </asp:GridView>
     </section>
 </asp:Content>

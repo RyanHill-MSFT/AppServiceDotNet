@@ -8,23 +8,22 @@ using Microsoft.Identity.Web;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure App Configuration
-builder.Host
-    .ConfigureAppConfiguration((context, config) =>
+builder.Host.ConfigureAppConfiguration((context, config) =>
+{
+    var credential = new DefaultAzureCredential();
+    config.AddAzureAppConfiguration(options =>
     {
-        var credential = new DefaultAzureCredential();
-        config.AddAzureAppConfiguration(options =>
+        var endpoint = builder.Configuration["AzureAppConfiguration:Endpoint"].ToString();
+        options.Connect(new Uri(endpoint), credential).ConfigureKeyVault(kv =>
         {
-            var endpoint = builder.Configuration["AzureAppConfiguration:Endpoint"].ToString();
-            options.Connect(new Uri(endpoint), credential).ConfigureKeyVault(kv =>
-            {
-                kv.SetCredential(credential);
-            });
+            kv.SetCredential(credential);
         });
     });
+});
 
 // Add Microsoft Authentication
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"));
+                .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
 
 // Add services to the container.
 builder.Services.AddRazorPages();

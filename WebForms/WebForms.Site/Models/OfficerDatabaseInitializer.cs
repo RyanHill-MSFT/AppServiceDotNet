@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Web;
-using WebMeDown.Site.Helpers;
+﻿using System.Data.Entity;
+using WebForms.Site.Helpers;
 
-namespace WebMeDown.Site.Models
+namespace WebForms.Site.Models
 {
     public class OfficerDatabaseInitializer : DropCreateDatabaseIfModelChanges<OfficerServiceContext>
     {

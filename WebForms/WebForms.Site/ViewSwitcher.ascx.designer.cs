@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WebMeDown.Site {
+namespace WebForms.Site {
     
     
     public partial class ViewSwitcher {

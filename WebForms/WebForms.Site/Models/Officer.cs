@@ -2,14 +2,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace WebMeDown.Site.Models
+namespace WebForms.Site.Models
 {
     public class Officer
     {
         [Key]
         public int Id { get; set; }
 
-        public string SerialNo { get; set; } = GenerateSerialNumber();
+        public string SerialNo { get; set; }
 
         public StarfleetRank Rank { get; set; }
 

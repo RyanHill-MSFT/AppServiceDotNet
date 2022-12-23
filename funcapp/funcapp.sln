@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32505.426
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "funcapp", "funcapp\funcapp.csproj", "{EE955D64-F6DC-4B3E-A0E9-FBC951B29A9C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "common.models", "..\common\models\common.models.csproj", "{F133AF07-53BC-49B9-8079-7FD9A60F6543}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EE955D64-F6DC-4B3E-A0E9-FBC951B29A9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE955D64-F6DC-4B3E-A0E9-FBC951B29A9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE955D64-F6DC-4B3E-A0E9-FBC951B29A9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE955D64-F6DC-4B3E-A0E9-FBC951B29A9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F133AF07-53BC-49B9-8079-7FD9A60F6543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F133AF07-53BC-49B9-8079-7FD9A60F6543}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F133AF07-53BC-49B9-8079-7FD9A60F6543}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F133AF07-53BC-49B9-8079-7FD9A60F6543}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4625EE4E-B85F-4833-9336-7BA124EB74A5}
+	EndGlobalSection
+EndGlobal

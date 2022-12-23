@@ -1,0 +1,23 @@
+@baseUrl = http://localhost:7071
+
+###
+
+GET {{baseUrl}}/api/todos HTTP/1.1
+
+###
+
+# @name createTodo
+POST {{baseUrl}}/api/todos HTTP/1.1
+Content-Type: application/json
+
+{
+    "title":"this is a test todo"
+}
+
+@todoId = {{createTodo.response.body.$.id}}
+
+###
+
+
+# @name getTodo
+GET {{baseUrl}}/api/todos/@{{todoId}}

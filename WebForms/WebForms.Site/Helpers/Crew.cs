@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using WebMeDown.Site.Models;
+﻿using WebForms.Site.Models;
 
-namespace WebMeDown.Site.Helpers
+namespace WebForms.Site.Helpers
 {
     public class Crew
     {
@@ -34,7 +30,8 @@ namespace WebMeDown.Site.Helpers
                     Department = DepartmentArea.Operations,
                     Rank = StarfleetRank.Lieutenant | StarfleetRank.Commander,
                     FirstName = "Data",
-                    Assignment = "Second Officer"
+                    Assignment = "Second Officer",
+                    SerialNo = Officer.GenerateSerialNumber()
                 },
                 new Officer
                 {
@@ -42,7 +39,8 @@ namespace WebMeDown.Site.Helpers
                     Rank = StarfleetRank.Lieutenant | StarfleetRank.Commander,
                     FirstName = "Geordi",
                     LastName = "LaForge",
-                    Assignment = "Chief Engineer"
+                    Assignment = "Chief Engineer",
+                    SerialNo = Officer.GenerateSerialNumber()
                 },
                 new Officer
                 {
@@ -50,7 +48,8 @@ namespace WebMeDown.Site.Helpers
                     Rank = StarfleetRank.Lieutenant | StarfleetRank.Commander,
                     FirstName = "Deanna",
                     LastName = "Troi",
-                    Assignment = "Counselor"
+                    Assignment = "Counselor",
+                    SerialNo = Officer.GenerateSerialNumber()
                 },
                 new Officer
                 {
@@ -58,8 +57,9 @@ namespace WebMeDown.Site.Helpers
                     Rank = StarfleetRank.Lieutenant | StarfleetRank.Commander,
                     FirstName = "Beverly",
                     LastName = "Crusher",
-                    Assignment = "Chief Medical Officer"
-                }
+                    Assignment = "Chief Medical Officer",
+                    SerialNo = Officer.GenerateSerialNumber()
+               }
         };
     }
 }

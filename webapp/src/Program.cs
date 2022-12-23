@@ -20,6 +20,7 @@ var cred = new DefaultAzureCredential(new DefaultAzureCredentialOptions()
     }
 });
 
+
 // Add Azure App Configuration to the container.
 builder.Configuration.AddAzureAppConfiguration(options =>
 {
@@ -57,11 +58,6 @@ builder.Services.AddAuthorization(options => options.FallbackPolicy = options.De
                 .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
                 .AddInMemoryTokenCaches();
 
-builder.Services.AddAzureClients(clientBuilder =>
-{
-    clientBuilder.AddBlobServiceClient(builder.Configuration["StorageAccount:ConnectionString:blob"], preferMsi: true);
-    clientBuilder.AddQueueServiceClient(builder.Configuration["StorageAccount:ConnectionString:queue"], preferMsi: true);
-});
 builder.Services.AddTransient<IBufferedFileUpload, BufferedFileUpload>();
 
 var app = builder.Build();
