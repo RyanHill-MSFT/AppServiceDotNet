@@ -58,9 +58,15 @@ builder.Services.AddAuthorization(options => options.FallbackPolicy = options.De
                 .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
                 .AddInMemoryTokenCaches();
 
-builder.Services.AddTransient<IBufferedFileUpload, BufferedFileUpload>();
+builder.Services.AddTransient<IBufferedFileUpload, BufferedFileUpload>()
+                .AddHostedService<BackgroundWorkerService>();
 
 var app = builder.Build();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+app.Lifetime.ApplicationStarted.Register(() => logger.LogInformation("Application started"));
+app.Lifetime.ApplicationStopping.Register(() => logger.LogInformation("Application stopping"));
+app.Lifetime.ApplicationStopped.Register(() => logger.LogInformation("Application stopped"));
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

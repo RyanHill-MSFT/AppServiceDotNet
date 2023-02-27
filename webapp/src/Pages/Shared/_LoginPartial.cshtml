@@ -5,9 +5,11 @@
 <ul class="navbar-nav">
     @if (User.Identity?.IsAuthenticated == true)
     {
+        var ms = new MemoryStream();
         var photo = await graphClient.Me.Photo.Content.Request().GetAsync();
-        var imgData = Convert.ToBase64String((photo as MemoryStream).ToArray());
-        <div class="image-cropper"><img src="data:image/png;base64, @imgData" /></div>
+        photo?.CopyTo(ms);
+        var imageData = Convert.ToBase64String(ms.ToArray());
+        <div class="image-cropper"><img src="data:image/png;base64, @imageData" /></div>
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
         </li>
