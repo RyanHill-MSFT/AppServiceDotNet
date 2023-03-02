@@ -1,8 +1,11 @@
-﻿namespace webapp.Services
+﻿using webapp.Helper;
+
+namespace webapp.Services
 {
     public class BackgroundWorkerService : BackgroundService
     {
         private readonly ILogger<BackgroundWorkerService> _logger;
+        static readonly Guid _guid = Guid.NewGuid();
 
         public BackgroundWorkerService(ILogger<BackgroundWorkerService> logger)
         {
@@ -13,9 +16,8 @@
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Worker running on {Machine} at: {time}", Environment.MachineName, DateTimeOffset.Now);
-                
-                await Task.Delay(5000, stoppingToken);
+                _logger.LogWorkerRunning(_guid, Environment.MachineName, DateTimeOffset.Now);
+                await Task.Delay(5_000, stoppingToken);
             }
         }
     }

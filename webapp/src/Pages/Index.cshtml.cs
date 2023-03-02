@@ -1,11 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Identity.Web;
-using System.Net;
 using Microsoft.Graph;
 
-namespace webapp.Pages
-{
+namespace webapp.Pages {
     [AuthorizeForScopes(ScopeKeySection = "MicrosoftGraph:Scopes")]
     public class IndexModel : PageModel
     {
@@ -20,12 +17,12 @@ namespace webapp.Pages
 
         public async Task OnGet()
         {
-            using (_logger.BeginScope("{0} {1}", nameof(IndexModel), nameof(OnGet)))
+            using (_logger.BeginScope("{Page} {Method}", nameof(IndexModel), nameof(OnGet)))
             {
                 var user = await _graphServiceClient.Me
                     .Request()
                     .GetAsync();
-                _logger.LogInformation(user.UserPrincipalName);
+                _logger.LogDebug(user.UserPrincipalName);
                 ViewData["GraphApiResult"] = user.DisplayName;
             }
         }
