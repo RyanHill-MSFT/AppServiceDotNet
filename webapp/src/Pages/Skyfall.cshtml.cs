@@ -27,7 +27,7 @@ namespace webapp.Pages
             {
                 try
                 {
-                    logger.LogInformation("Attempting to upload file {0} ({1} KB)",
+                    logger.LogInformation("Attempting to upload file {name} ({size} KB)",
                                           file.Name,
                                           file.Length / 1000);
                     if (await bufferedFileUpload.UploadFile(file))

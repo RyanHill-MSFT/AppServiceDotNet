@@ -1,18 +1,5 @@
 {
   "dependencies": {
-    "identityapp1": {
-      "secretStore": "LocalSecretsFile",
-      "type": "identityapp.secretStore",
-      "connectionId": "AzureAD:ClientSecret",
-      "dynamicId": null
-    },
-    "appConfig1": {
-      "secretStore": "LocalSecretsFile",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.AppConfiguration/configurationStores/appcs-ryhill",
-      "type": "appConfig.azure",
-      "connectionId": "AppConfig",
-      "dynamicId": null
-    },
     "appInsights1": {
       "secretStore": "LocalSecretsFile",
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/appi-ryhill-eastus",
@@ -20,16 +7,18 @@
       "connectionId": "APPLICATIONINSIGHTS_CONNECTION_STRING",
       "dynamicId": null
     },
-    "storage1": {
-      "secretStore": "LocalSecretsFile",
-      "type": "storage.emulator",
-      "connectionId": "StorageAccount:ConnectionString"
-    },
     "secrets1": {
       "secretStore": null,
       "resourceId": null,
       "type": "secrets.user",
       "connectionId": null
+    },
+    "appConfig2": {
+      "secretStore": "LocalSecretsFile",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.AppConfiguration/configurationStores/appcs-ryhill",
+      "type": "appConfig.azure",
+      "connectionId": "AppConfig",
+      "dynamicId": null
     }
   }
 }

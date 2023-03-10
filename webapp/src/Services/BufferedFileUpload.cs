@@ -4,7 +4,7 @@ namespace webapp.Services
     {
         public string FolderPath { get; set; } = Path.Combine(
             Environment.GetEnvironmentVariable("DataDirectory")
-            ?? Environment.CurrentDirectory, "DataDirectory");
+            ?? Environment.CurrentDirectory, "data");
 
         public async Task<bool> UploadFile(IFormFile file)
         {

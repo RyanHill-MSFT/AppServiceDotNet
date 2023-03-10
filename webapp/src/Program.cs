@@ -3,6 +3,9 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using webapp.Services;
 using Microsoft.Extensions.Logging.AzureAppServices;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.ApplicationInsights.Extensibility;
+using webapp.Helper;
 
 var builder = WebApplication.CreateBuilder(args);
 var cred = new DefaultAzureCredential(new DefaultAzureCredentialOptions() {
@@ -23,7 +26,7 @@ builder.Services.Configure<AzureFileLoggerOptions>(options => {
 });
 
 // Add Azure App Configuration to the container.
-string? appConfig = builder.Configuration.GetValue<string>("Endpoints:AppConfig");
+string? appConfig = builder.Configuration.GetValue<string>("AppConfig");
 builder.Configuration.AddAzureAppConfiguration(options => {
     // Use Azure Active Directory authentication.
     // The identity of this app should be assigned 'App Configuration Data Reader' or 'App Configuration Data Owner' role in App Configuration.
@@ -51,14 +54,15 @@ builder.Services.AddAzureAppConfiguration()
 builder.Services.AddRazorPages()
                 .AddMicrosoftIdentityUI();
 
-builder.Services.AddTransient<IBufferedFileUpload, BufferedFileUpload>()
+builder.Services.AddSingleton<ITelemetryInitializer, WebAppTelemetryInitializer>()
+                .AddTransient<IBufferedFileUpload, BufferedFileUpload>()
                 .AddHostedService<BackgroundWorkerService>();
 
 var app = builder.Build();
-
 app.Lifetime.ApplicationStarted.Register(() => app.Logger.LogInformation("Application started"));
 app.Lifetime.ApplicationStopping.Register(() => app.Logger.LogInformation("Application stopping"));
 app.Lifetime.ApplicationStopped.Register(() => app.Logger.LogInformation("Application stopped"));
+app.MapGet("/api/health", () => Results.Ok);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment()) {

@@ -1,24 +1,19 @@
 {
   "dependencies": {
-    "identityapp1": {
-      "type": "identityapp",
-      "connectionId": "AzureAD:ClientSecret",
-      "dynamicId": null
-    },
-    "storage1": {
-      "type": "storage",
-      "connectionId": "StorageAccount:ConnectionString"
-    },
     "secrets1": {
       "type": "secrets",
       "connectionId": null
+    },
+    "appConfig1": {
+      "ignored": "true",
+      "type": "appConfig.azure"
     },
     "appInsights1": {
       "type": "appInsights",
       "connectionId": "APPLICATIONINSIGHTS_CONNECTION_STRING",
       "dynamicId": null
     },
-    "appConfig1": {
+    "appConfig2": {
       "type": "appConfig",
       "connectionId": "AppConfig",
       "dynamicId": null
